@@ -21,6 +21,7 @@ RUN apt-get update && apt-get upgrade -y \
     gnupg \
     software-properties-common \
     gettext-base \
+    unzip \
     wget
 
 #Install Kubernetes
