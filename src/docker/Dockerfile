@@ -55,11 +55,10 @@ RUN rm -rf /var/lib/apt/lists/*
 
 # add user
 RUN useradd -ms /bin/bash worker
-
+ENV PATH="$PATH:/home/worker/.local/bin"
 RUN chown -R worker:worker /azp
 
 USER worker
-
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
 # FOR DEBUG PURPOSES
 #ENTRYPOINT ["tail", "-f", "/dev/null"]
