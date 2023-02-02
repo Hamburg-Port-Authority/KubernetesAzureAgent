@@ -1,4 +1,4 @@
-FROM debian:bullseye-20220527-slim
+FROM debian:bullseye-20230109-slim
 
 LABEL MAINTAINER=deb4sh@github
 LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureAgent
@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 #Install general dependencies
 RUN apt-get update && apt-get upgrade -y \
- && apt-get install -y -qq --no-install-recommends \
+    && apt-get install -y -qq --no-install-recommends \
     apt-transport-https \
     apt-utils \
     ca-certificates \
@@ -30,8 +30,23 @@ RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] htt
 RUN apt-get update && apt-get install -y -qq --no-install-recommends kubectl
 
 #Install KubeSeal
-RUN curl -L https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.18.0/kubeseal-0.18.0-linux-amd64.tar.gz -o kubeseal-0.18.0-linux-amd64.tar.gz \
-    && tar xfv kubeseal-0.18.0-linux-amd64.tar.gz -C /usr/local/bin
+RUN curl -L https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.19.4/kubeseal-0.19.4-linux-amd64.tar.gz -o kubeseal-0.19.4-linux-amd64.tar.gz \
+    && tar xfv kubeseal-0.19.4-linux-amd64.tar.gz -C /usr/local/bin
+
+
+#Install Helm
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
+    chmod 700 get_helm.sh && \
+    ./get_helm.sh
+
+#Install Helm-Diff
+RUN  helm plugin install https://github.com/databus23/helm-diff
+
+
+#Install Helmfile
+RUN curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
+    tar xfv helmfile_0.150.0_linux_amd64.tar.gz -C /usr/local/bin
+
 
 #Install DotNet
 RUN wget https://dot.net/v1/dotnet-install.sh && chmod +x dotnet-install.sh \
