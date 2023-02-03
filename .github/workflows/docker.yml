@@ -1,0 +1,52 @@
+name: Docker-Build
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions: 
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up QEMU # https://github.com/docker/setup-qemu-action
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx # https://github.com/docker/setup-buildx-action
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to GHCR
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Docker meta
+      id: meta_build
+      uses: docker/metadata-action@v3
+      with:
+        images: |
+          ghcr.io/deb4sh/kubernetes-azure-agent 
+        labels: |
+          org.opencontainers.image.title="Kubernetes Azure Agent"
+          org.opencontainers.image.description="Kubernetes Azure Agent on Debian"
+          org.opencontainers.image.vendor="https://github.com/deb4sh, https://hachyderm.io/@deb4sh"
+          org.label-schema.url="https://github.com/deB4SH/KubernetesAzureAgent"
+          org.label-schema.usage="https://github.com/deB4SH/KubernetesAzureAgent/blob/master/README.md"
+          org.label-schema.schema-version="1.0"
+        tags: |
+          type=schedule
+          type=ref,event=tag
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./src/docker/Dockerfile
+        platforms: linux/amd64,linux/arm64/v8
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta_build.outputs.tags }}
+        labels: ${{ steps.meta_build.outputs.labels }}
