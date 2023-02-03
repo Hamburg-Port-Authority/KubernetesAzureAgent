@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kubernetes-azure-agent
+spec:
+  selector:
+    matchLabels:
+      app: kubernetes-azure-agent
+  serviceName: kubernetes-azure-agent
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kubernetes-azure-agent
+    spec:
+      containers:
+      - name: agent
+        image: ghcr.io/deb4sh/kubernetes-azure-agent:1.1.2
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+        env:
+          - name: AZP_URL
+            value: "ADD_YOUR_ORGANISATION_HERE" # for example: "https://dev.azure.com/MyAwesomeOrg"
+          - name: AZP_POOL
+            value: "YOUR_AWESOME_WORKER_POOL_NAME"
+          - name: AZP_WORK
+            value: "/tmp/azp"
+          - name: AZP_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: azp-configuration-secret
+                key: password
+          # If you are behind a corporate filewall add the following env vars with your http proxy 
+          # - name: HTTP_PROXY
+          #   value: '' 
+          # - name: HTTPS_PROXY
+          #   value: ''
+          # - name: http_proxy
+          #   value: ''
+          # - name: https_proxy
+          #   value: ''
+          # - name: no_proxy
+          #   value: ''
+          # - name: NO_PROXY
+          #   value: ''
+        volumeMounts:
+          - name: init
+            mountPath: /azp/init
+      volumes:
+        - name: init
+          configMap:
+            name: initscripts
