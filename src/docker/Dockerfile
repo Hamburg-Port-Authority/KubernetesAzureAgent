@@ -22,7 +22,8 @@ RUN apt-get update && apt-get upgrade -y \
     software-properties-common \
     gettext-base \
     unzip \
-    wget
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
 #Install Kubernetes
 RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
