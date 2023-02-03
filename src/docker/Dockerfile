@@ -7,6 +7,11 @@ LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureA
 ENV TARGETARCH=linux-x64
 ENV DEBIAN_FRONTEND=noninteractive
 
+# add user
+RUN useradd -ms /bin/bash worker
+ENV PATH="$PATH:/home/worker/.local/bin"
+RUN chown -R worker:worker /azp
+
 #Install general dependencies
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y -qq --no-install-recommends \
@@ -26,14 +31,13 @@ RUN apt-get update && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 #Install Kubernetes
-RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-RUN apt-get update && apt-get install -y -qq --no-install-recommends kubectl
+RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list \
+    && apt-get update && apt-get install -y -qq --no-install-recommends kubectl
 
 #Install KubeSeal
 RUN curl -L https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.19.4/kubeseal-0.19.4-linux-amd64.tar.gz -o kubeseal-0.19.4-linux-amd64.tar.gz \
     && tar xfv kubeseal-0.19.4-linux-amd64.tar.gz -C /usr/local/bin
-
 
 #Install Helm
 RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
@@ -41,8 +45,8 @@ RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/s
     ./get_helm.sh
 
 #Install Helm-Diff
+ENV HELM_PLUGINS="/home/worker/.local/helm-plugin"
 RUN  helm plugin install https://github.com/databus23/helm-diff
-
 
 #Install Helmfile
 RUN curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
@@ -68,11 +72,6 @@ RUN /azp/installdependencies.sh
 
 # clean up apt lists
 RUN rm -rf /var/lib/apt/lists/*
-
-# add user
-RUN useradd -ms /bin/bash worker
-ENV PATH="$PATH:/home/worker/.local/bin"
-RUN chown -R worker:worker /azp
 
 USER worker
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
