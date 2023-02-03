@@ -25,7 +25,7 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: |
-          ghcr.io/deb4sh/kubernetes-azure-agent 
+          ghcr.io/Hamburg-Port-Authority/kubernetes-azure-agent 
         labels: |
           org.opencontainers.image.title="Kubernetes Azure Agent"
           org.opencontainers.image.description="Kubernetes Azure Agent on Debian"
