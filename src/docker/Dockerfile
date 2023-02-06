@@ -8,10 +8,12 @@ ENV TARGETARCH=linux-x64
 ENV DEBIAN_FRONTEND=noninteractive
 
 # add user
-RUN mkdir /azp
-RUN useradd -ms /bin/bash worker
+RUN mkdir /azp \
+    && useradd -ms /bin/bash worker \
+    && mkdir -p /home/worker/.local/bin \
+    && chown -R worker:worker /azp \
+    && chown -R worker:worker /home/worker/.local
 ENV PATH="$PATH:/home/worker/.local/bin"
-RUN chown -R worker:worker /azp
 
 #Install general dependencies
 RUN apt-get update && apt-get upgrade -y \
@@ -48,7 +50,8 @@ RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/s
 
 #Install Helm-Diff
 ENV HELM_PLUGINS="/home/worker/.local/helm-plugin"
-RUN  helm plugin install https://github.com/databus23/helm-diff
+RUN  helm plugin install https://github.com/databus23/helm-diff \
+    && chown -R worker:worker /home/worker/.local/helm-plugin
 
 #Install Helmfile
 RUN curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
@@ -76,6 +79,6 @@ RUN chmod +x start.sh installdependencies.sh entrypoint.sh
 RUN /azp/installdependencies.sh
 
 USER worker
-ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
+#ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
 # FOR DEBUG PURPOSES
-#ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
