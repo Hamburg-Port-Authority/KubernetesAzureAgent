@@ -79,6 +79,6 @@ RUN chmod +x start.sh installdependencies.sh entrypoint.sh
 RUN /azp/installdependencies.sh
 
 USER worker
-#ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
+ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
 # FOR DEBUG PURPOSES
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
