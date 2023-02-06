@@ -8,6 +8,7 @@ ENV TARGETARCH=linux-x64
 ENV DEBIAN_FRONTEND=noninteractive
 
 # add user
+RUN mkdir /azp
 RUN useradd -ms /bin/bash worker
 ENV PATH="$PATH:/home/worker/.local/bin"
 RUN chown -R worker:worker /azp
@@ -33,7 +34,8 @@ RUN apt-get update && apt-get upgrade -y \
 #Install Kubernetes
 RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list \
-    && apt-get update && apt-get install -y -qq --no-install-recommends kubectl
+    && apt-get update && apt-get install -y -qq --no-install-recommends kubectl \
+    && rm -rf /var/lib/apt/lists/*
 
 #Install KubeSeal
 RUN curl -L https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.19.4/kubeseal-0.19.4-linux-amd64.tar.gz -o kubeseal-0.19.4-linux-amd64.tar.gz \
@@ -52,6 +54,9 @@ RUN  helm plugin install https://github.com/databus23/helm-diff
 RUN curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
     tar xfv helmfile_0.150.0_linux_amd64.tar.gz -C /usr/local/bin
 
+#Install Kustomize
+RUN curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.0.0/kustomize_v5.0.0_linux_amd64.tar.gz -o kustomize_v5.0.0_linux_amd64.tar.gz && \
+    tar xfv kustomize_v5.0.0_linux_amd64.tar.gz -C /usr/local/bin
 
 #Install DotNet
 RUN wget https://dot.net/v1/dotnet-install.sh && chmod +x dotnet-install.sh \
@@ -69,9 +74,6 @@ COPY /src/docker/scripts/entrypoint.sh .
 RUN chmod +x start.sh installdependencies.sh entrypoint.sh
 
 RUN /azp/installdependencies.sh
-
-# clean up apt lists
-RUN rm -rf /var/lib/apt/lists/*
 
 USER worker
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
