@@ -57,6 +57,11 @@ RUN  helm plugin install https://github.com/databus23/helm-diff \
 RUN curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
     tar xfv helmfile_0.150.0_linux_amd64.tar.gz -C /usr/local/bin
 
+#Install argocd cli
+RUN curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 && \
+    install -m 555 argocd-linux-amd64 /usr/local/bin/argocd && \
+    rm argocd-linux-amd64
+
 #Install Kustomize
 RUN curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.0.0/kustomize_v5.0.0_linux_amd64.tar.gz -o kustomize_v5.0.0_linux_amd64.tar.gz && \
     tar xfv kustomize_v5.0.0_linux_amd64.tar.gz -C /usr/local/bin
