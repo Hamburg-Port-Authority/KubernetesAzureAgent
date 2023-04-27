@@ -74,6 +74,10 @@ ENV PATH="$PATH:/root/.dotnet/"
 #Install AzureCli
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
+#Install vcluster CLI
+RUN curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" \
+    && install -c -m 0755 vcluster /usr/local/bin
+
 WORKDIR /azp
 
 COPY /src/docker/azure-scripts/start.sh .
