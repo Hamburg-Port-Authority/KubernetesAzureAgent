@@ -34,10 +34,9 @@ RUN apt-get update && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 #Install Kubernetes
-RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list \
-    && apt-get update && apt-get install -y -qq --no-install-recommends kubectl \
-    && rm -rf /var/lib/apt/lists/*
+RUN   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" --output-dir /usr/local/bin \
+    && chmod +x /usr/local/bin/kubectl
+
 
 #Install KubeSeal
 RUN curl -L https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.19.4/kubeseal-0.19.4-linux-amd64.tar.gz -o kubeseal-0.19.4-linux-amd64.tar.gz \
@@ -90,4 +89,4 @@ RUN /azp/installdependencies.sh
 USER worker
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
 # FOR DEBUG PURPOSES
-#ENTRYPOINT ["tail", "-f", "/dev/null"]
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
