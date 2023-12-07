@@ -79,10 +79,20 @@ RUN curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/dow
 
 #Install sqlcmd
 #Add Microsoft Ubuntu Repositories
-RUN wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/msodbcsql18/msodbcsql18_18.3.2.1-1_amd64.deb && ACCEPT_EULA=Y apt install -y ./msodbcsql18_18.3.2.1-1_amd64.deb \
-    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/mssql-tools18/mssql-tools18_18.2.1.1-1_amd64.deb && ACCEPT_EULA=Y apt install -y ./mssql-tools18_18.2.1.1-1_amd64.deb
+RUN wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/msodbcsql18/msodbcsql18_18.3.2.1-1_amd64.deb \
+    && ACCEPT_EULA=Y apt install -y ./msodbcsql18_18.3.2.1-1_amd64.deb \
+    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/mssql-tools18/mssql-tools18_18.2.1.1-1_amd64.deb \
+    && ACCEPT_EULA=Y apt install -y ./mssql-tools18_18.2.1.1-1_amd64.deb
 
-
+RUN wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/libodbc1_2.3.11-1_amd64.deb \
+    && ACCEPT_EULA=Y apt install -y ./libodbc1_2.3.11-1_amd64.deb \
+    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/odbcinst1debian2_2.3.11-1_amd64.deb \
+    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/odbcinst_2.3.11-1_amd64.deb \
+    && ACCEPT_EULA=Y apt install -y ./odbcinst_2.3.11-1_amd64.deb ./odbcinst1debian2_2.3.11-1_amd64.deb \
+    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/unixodbc_2.3.11-1_amd64.deb \
+    && ACCEPT_EULA=Y apt install -y ./unixodbc_2.3.11-1_amd64.deb \
+    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/unixodbc-dev_2.3.11-1_amd64.deb \
+    && ACCEPT_EULA=Y apt install -y ./unixodbc-dev_2.3.11-1_amd64.deb 
 
 WORKDIR /azp
 
