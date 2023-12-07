@@ -15,6 +15,10 @@ RUN mkdir /azp \
     && chown -R worker:worker /home/worker/.local
 ENV PATH="$PATH:/home/worker/.local/bin"
 
+#Add Microsoft Ubuntu Repositories
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc
+RUN curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | tee /etc/apt/sources.list.d/mssql-release.list
+
 #Install general dependencies
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y -qq --no-install-recommends \
@@ -31,6 +35,8 @@ RUN apt-get update && apt-get upgrade -y \
     gettext-base \
     unzip \
     wget \
+    mssql-tools18 \ 
+    unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
 
 #Install Kubernetes
