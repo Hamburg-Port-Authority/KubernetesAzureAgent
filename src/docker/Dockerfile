@@ -15,10 +15,6 @@ RUN mkdir /azp \
     && chown -R worker:worker /home/worker/.local
 ENV PATH="$PATH:/home/worker/.local/bin"
 
-#Add Microsoft Ubuntu Repositories
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc
-RUN curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | tee /etc/apt/sources.list.d/mssql-release.list
-
 #Install general dependencies
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y -qq --no-install-recommends \
@@ -35,8 +31,6 @@ RUN apt-get update && apt-get upgrade -y \
     gettext-base \
     unzip \
     wget \
-    mssql-tools18 \ 
-    unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
 
 #Install Kubernetes
@@ -82,6 +76,13 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 #Install vcluster CLI
 RUN curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" \
     && install -c -m 0755 vcluster /usr/local/bin
+
+#Install sqlcmd
+#Add Microsoft Ubuntu Repositories
+RUN wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/msodbcsql18/msodbcsql18_18.3.2.1-1_amd64.deb && ACCEPT_EULA=Y apt install -y ./msodbcsql18_18.3.2.1-1_amd64.deb \
+    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/mssql-tools18/mssql-tools18_18.2.1.1-1_amd64.deb && ACCEPT_EULA=Y apt install -y ./mssql-tools18_18.2.1.1-1_amd64.deb
+
+
 
 WORKDIR /azp
 
