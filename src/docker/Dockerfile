@@ -1,4 +1,4 @@
-FROM debian:bullseye-20230109-slim
+FROM debian:bookworm-20240130-slim
 
 LABEL MAINTAINER=deb4sh@github
 LABEL org.opencontainers.image.source=https://github.com/deB4SH/KubernetesAzureAgent
@@ -30,8 +30,7 @@ RUN apt-get update && apt-get upgrade -y \
     software-properties-common \
     gettext-base \
     unzip \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
+    wget
 
 #Install Kubernetes
 RUN   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" --output-dir /usr/local/bin \
@@ -66,9 +65,11 @@ RUN curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kusto
     tar xfv kustomize_v5.0.0_linux_amd64.tar.gz -C /usr/local/bin
 
 #Install DotNet
-RUN wget https://dot.net/v1/dotnet-install.sh && chmod +x dotnet-install.sh \
-    && ./dotnet-install.sh -c 3.1
-ENV PATH="$PATH:/root/.dotnet/"
+RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && apt-get install -y dotnet-sdk-8.0
 
 #Install AzureCli
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
@@ -77,31 +78,34 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 RUN curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" \
     && install -c -m 0755 vcluster /usr/local/bin
 
-#Install sqlcmd
-#Add Microsoft Ubuntu Repositories
-RUN wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/msodbcsql18/msodbcsql18_18.3.2.1-1_amd64.deb \
-    && ACCEPT_EULA=Y apt install -y ./msodbcsql18_18.3.2.1-1_amd64.deb \
-    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/m/mssql-tools18/mssql-tools18_18.2.1.1-1_amd64.deb \
-    && ACCEPT_EULA=Y apt install -y ./mssql-tools18_18.2.1.1-1_amd64.deb
-
-RUN wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/libodbc1_2.3.11-1_amd64.deb \
-    && ACCEPT_EULA=Y apt install -y ./libodbc1_2.3.11-1_amd64.deb \
-    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/odbcinst1debian2_2.3.11-1_amd64.deb \
-    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/odbcinst_2.3.11-1_amd64.deb \
-    && ACCEPT_EULA=Y apt install -y ./odbcinst_2.3.11-1_amd64.deb ./odbcinst1debian2_2.3.11-1_amd64.deb \
-    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/unixodbc_2.3.11-1_amd64.deb \
-    && ACCEPT_EULA=Y apt install -y ./unixodbc_2.3.11-1_amd64.deb \
-    && wget https://packages.microsoft.com/ubuntu/20.04/prod/pool/main/u/unixodbc/unixodbc-dev_2.3.11-1_amd64.deb \
-    && ACCEPT_EULA=Y apt install -y ./unixodbc-dev_2.3.11-1_amd64.deb 
+#Install ms odbc 18 drivers and sqlcmd
+#https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver16&tabs=debian18-install%2Calpine17-install%2Cdebian8-install%2Credhat7-13-install%2Crhel7-offline
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc \
+    && curl https://packages.microsoft.com/config/debian/12/prod.list | tee /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    #odbc driver
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 \
+    #sqlcmd and bcp
+    && ACCEPT_EULA=Y apt-get install -y mssql-tools18
+#add directory to path
+ENV PATH="$PATH:/opt/mssql-tools18/bin"
 
 WORKDIR /azp
 
 COPY /src/docker/azure-scripts/start.sh .
-COPY /src/docker/azure-scripts/installdependencies.sh .
+#COPY /src/docker/azure-scripts/installdependencies.sh .
 COPY /src/docker/scripts/entrypoint.sh .
-RUN chmod +x start.sh installdependencies.sh entrypoint.sh
+RUN chmod +x start.sh entrypoint.sh
 
-RUN /azp/installdependencies.sh
+
+# install dependencies for dotNetcore
+RUN apt install -y libssl3 libkrb5-3 zlib1g debsums
+
+#clean up leftovers
+RUN apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
 
 USER worker
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
