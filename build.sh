@@ -1,5 +1,12 @@
 #! /bin/bash
 
+if ! [ -x "$(command -v git)" ]; then
+  echo 'Error: git is not installed.' >&2
+  exit 1
+fi
+
+REGISTRY="ghcr.io/hamburg-port-authority"
+
 # parse options
 while getopts :r: flag
 do
@@ -20,9 +27,18 @@ else
     TAG=$GIT_TAG
 fi
 
+if [ -x "$(command -v podman)" ]; then
+    cli_cmd="podman"
+elif [ -x "$(command -v docker)" ]; then
+    cli_cmd="docker"
+else
+    echo "No container cli tool found! Aborting."
+    exit -1
+fi
+
 echo "Building azure agent image with tag $TAG"
 
-docker \
+${cli_cmd}  \
     build . \
     -f src/docker/Dockerfile \
     -t $(echo "$REGISTRY/kubernetes-azure-agent:$TAG")
