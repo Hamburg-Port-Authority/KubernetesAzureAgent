@@ -99,7 +99,7 @@ RUN chmod +x start.sh entrypoint.sh
 
 
 # install dependencies for dotNetcore
-RUN apt install -y libssl3 libkrb5-3 zlib1g debsums
+RUN apt install -y libssl3 libkrb5-3 zlib1g debsums icu-devtools libicu-dev icu-doc libicu72
 
 #clean up leftovers
 RUN apt-get clean \
