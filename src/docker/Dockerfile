@@ -45,11 +45,11 @@ RUN curl -L https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.
 ENV HELM_PLUGINS="/home/worker/.local/helm-plugin"
 RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
     && chmod 700 get_helm.sh \
-    && ./get_helm.sh \
+    && sh -c ./get_helm.sh \
     && helm plugin install https://github.com/databus23/helm-diff \
     && chown -R worker:worker /home/worker/.local/helm-plugin \
-    && curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
-    && tar xfv helmfile_0.150.0_linux_amd64.tar.gz -C /usr/local/bin
+    && curl -L https://github.com/helmfile/helmfile/releases/download/v0.166.0/helmfile_0.166.0_linux_amd64.tar.gz -o  helmfile_0.166.0_linux_amd64.tar.gz \
+    && tar xfv helmfile_0.166.0_linux_amd64.tar.gz -C /usr/local/bin
 
     #Install argocd cli
 RUN curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 && \
@@ -74,12 +74,8 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 WORKDIR /azp
 
 COPY /src/docker/azure-scripts/start.sh .
-#COPY /src/docker/azure-scripts/installdependencies.sh .
 COPY /src/docker/scripts/entrypoint.sh .
 RUN chmod +x start.sh entrypoint.sh
-
-
-
 
 #clean up leftovers
 RUN apt-get clean \
@@ -88,6 +84,11 @@ RUN apt-get clean \
     && rm -rf /var/tmp/*
 
 USER worker
+
+#Install gpg key into keyring
+RUN curl -sSL https://cert-manager.io/public-keys/cert-manager-pgp-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.asc > cert-manager-pgp-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.asc \
+    && gpg --import cert-manager-pgp-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.asc
+
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
 # FOR DEBUG PURPOSES
 # ENTRYPOINT ["tail", "-f", "/dev/null"]
