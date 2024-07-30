@@ -85,9 +85,9 @@ RUN apt-get clean \
 
 USER worker
 
-#Install gpg key into keyring
-RUN curl -sSL https://cert-manager.io/public-keys/cert-manager-pgp-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.asc > cert-manager-pgp-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.asc \
-    && gpg --import cert-manager-pgp-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.asc
+#Install gpg key into keyring & export pubring into pubring.gpg
+RUN curl https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg | gpg --import \
+    && gpg --export >~/.gnupg/pubring.gpg
 
 ENTRYPOINT [ "./entrypoint.sh", "-f", "/azp/init" ]
 # FOR DEBUG PURPOSES
