@@ -74,9 +74,6 @@ RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod
 #Install AzureCli
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
-#Install vcluster CLI
-RUN curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" \
-    && install -c -m 0755 vcluster /usr/local/bin
 
 #Install ms odbc 18 drivers and sqlcmd
 #https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver16&tabs=debian18-install%2Calpine17-install%2Cdebian8-install%2Credhat7-13-install%2Crhel7-offline
