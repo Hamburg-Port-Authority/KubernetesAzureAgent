@@ -46,14 +46,12 @@ RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/s
     chmod 700 get_helm.sh && \
     ./get_helm.sh
 
-#Install Helm-Diff
+#Install Helm-Diff & Helmfile
 ENV HELM_PLUGINS="/home/worker/.local/helm-plugin"
 RUN  helm plugin install https://github.com/databus23/helm-diff \
-    && chown -R worker:worker /home/worker/.local/helm-plugin
-
-#Install Helmfile
-RUN curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
-    tar xfv helmfile_0.150.0_linux_amd64.tar.gz -C /usr/local/bin
+    && chown -R worker:worker /home/worker/.local/helm-plugin \
+    && curl -L https://github.com/helmfile/helmfile/releases/download/v0.150.0/helmfile_0.150.0_linux_amd64.tar.gz -o  helmfile_0.150.0_linux_amd64.tar.gz && \
+    && tar xfv helmfile_0.150.0_linux_amd64.tar.gz -C /usr/local/bin
 
 #Install argocd cli
 RUN curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 && \
