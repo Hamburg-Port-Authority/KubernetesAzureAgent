@@ -64,11 +64,12 @@ RUN curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases
 RUN curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.0.0/kustomize_v5.0.0_linux_amd64.tar.gz -o kustomize_v5.0.0_linux_amd64.tar.gz && \
     tar xfv kustomize_v5.0.0_linux_amd64.tar.gz -C /usr/local/bin
 
-#Install DotNet
+#install dependencies for dotNetcore & Install DotNet
 RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
     && rm packages-microsoft-prod.deb \
     && apt-get update \
+    && apt install -y libssl3 libkrb5-3 zlib1g debsums icu-devtools libicu-dev icu-doc libicu72 \
     && apt-get install -y dotnet-sdk-8.0
 
 #Install AzureCli
@@ -82,8 +83,7 @@ COPY /src/docker/scripts/entrypoint.sh .
 RUN chmod +x start.sh entrypoint.sh
 
 
-# install dependencies for dotNetcore
-RUN apt install -y libssl3 libkrb5-3 zlib1g debsums icu-devtools libicu-dev icu-doc libicu72
+
 
 #clean up leftovers
 RUN apt-get clean \
