@@ -51,6 +51,12 @@ jobs:
     - name: Debug First Tag
       run: echo "First Tag ${{ steps.extract_tag.outputs.first_tag }}"
 
+    - name: Install cosign
+      uses: sigstore/cosign-installer@main
+
+    - name: Cosign check install!
+      run: cosign version  
+
     - name: Sign the container image
       env:
         COSIGN_EXPERIMENTAL: "true"
